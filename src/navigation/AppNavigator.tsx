@@ -2,6 +2,8 @@ import React from 'react';
 import { TouchableOpacity, Text, View, Image, StyleSheet } from 'react-native';
 import { NavigationContainer, DrawerActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useThemeContext } from '../hooks/useTheme';
+import { lightTheme, darkTheme } from '../theme/theme.js';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -114,10 +116,13 @@ function MainDrawer() {
 }
 
 export default function AppNavigator() {
+  const { isDarkMode } = useThemeContext();
+  const theme = isDarkMode ? darkTheme : lightTheme;
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <PaperProvider>
+        <PaperProvider theme={theme}>
           <Stack.Navigator
             initialRouteName="Login"
             screenOptions={{ headerShown: false }}
