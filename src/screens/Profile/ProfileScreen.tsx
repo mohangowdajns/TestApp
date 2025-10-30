@@ -126,7 +126,7 @@ const ProfileScreen = () => {
           {/* Chart */}
           <LineChart
             data={chartData}
-            width={Dimensions.get('window').width - 80}
+            width={Dimensions.get('window').width-38 }
             height={120}
             chartConfig={{
               backgroundColor: theme.colors.primary,
