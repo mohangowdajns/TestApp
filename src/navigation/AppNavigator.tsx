@@ -48,7 +48,7 @@ function MainDrawer() {
               source={{ uri: "https://i.pravatar.cc/150?img=12" }}
               style={styles.avatar}
             />
-            <Text style={styles.name}>Arka</Text>
+            <Text style={styles.name}>Arka 123</Text>
             <Text style={styles.email}>arka@example.com</Text>
           </View>
 
