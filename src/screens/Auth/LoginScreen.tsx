@@ -1,64 +1,113 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import React, { useState } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { TextInput, Text } from 'react-native-paper';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import LanguageModal from '../../modals/LanguageModal';
+import CustomButton from '../../components/CustonButton';
 
-type Props = NativeStackScreenProps<RootStackParamList, "Login">;
+type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
-  const [username, setUsername] = useState("arka");
-  const [password, setPassword] = useState("1234");
+  const [username, setUsername] = useState('0');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
 
   const handleLogin = () => {
-    if (username === "arka" && password === "1234") {
-      navigation.replace("MainDrawer"); //  go into drawer
-    } else {
-      Alert.alert("Invalid username or password!");
-    }
+    navigation.replace('ConfirmOtp');
+  };
+
+  const setMobilePhone = (phone: string) => {
+    const numericText = phone.replace(/[^0-9]/g, '');
+    setUsername(numericText);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.image_container}>
+        <Image source={require('../../assets/images/screen_logo.png')} />
+      </View>
+      <View style={styles.dropdownContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Opening modal');
+            setModalVisible(true);
+          }}
+          style={styles.innerDropDownContainer}
+        >
+          <Text>{selectedLanguage}</Text>
+
+          <Image source={require('../../assets/images/chevron-down.png')} />
+        </TouchableOpacity>
+      </View>
 
       <TextInput
-        style={styles.input}
-        placeholder="Username"
+        label="Mobile"
+        placeholder="Enter Your Mobile No."
+        inputMode="numeric"
         value={username}
-        onChangeText={setUsername}
+        mode="outlined"
+        onChangeText={setMobilePhone}
+        keyboardType="phone-pad"
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <CustomButton title="Request OTP" handlePress={handleLogin} />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-    </View>
+      {/* <View style={styles.disclaimer}>
+        <Text style={styles.disclaimerText}>
+          By clicking verify, I agree with the Terms & Conditions and Privacy
+          Policy​
+        </Text>
+      </View> */}
+
+      <LanguageModal
+        visible={modalVisible}
+        selected={selectedLanguage}
+        onSelect={lang => {
+          setSelectedLanguage(lang);
+          setModalVisible(false);
+        }}
+        onClose={() => setModalVisible(false)}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  input: {
+  container: { flex: 1, padding: 20, gap: 24 },
+  dropdownContainer: {
+    alignContent: 'center',
+    alignItems: 'center',
+  },
+  innerDropDownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#e0f0ff',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 8,
-    backgroundColor: "#fff",
+    borderColor: '#ccc',
+    width: 180,
   },
-  button: {
-    backgroundColor: "#3A5FE8",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
+
+  image_container: {
+    marginTop: 20,
+    alignContent: 'center',
+    alignItems: 'center',
   },
-  buttonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+
+  disclaimer: {
+    position: 'absolute',
+    bottom: 50,
+    left: 20,
+    right: 20,
+  },
+  disclaimerText: {
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+  },
 });

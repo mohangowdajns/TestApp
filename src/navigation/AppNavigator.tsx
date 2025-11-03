@@ -10,6 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { PaperProvider } from 'react-native-paper';
 import LoginScreen from '../screens/Auth/LoginScreen';
+import ConfirmOtp from '../screens/Auth/ConfirmOtp.tsx';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
 import MainTabs from './MainTabs'; // bottom tabs
@@ -21,6 +22,7 @@ import { useThemeContext } from '../context/ThemeContext';
 export type RootStackParamList = {
   Login: undefined;
   MainDrawer: undefined;
+  ConfirmOtp: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -124,6 +126,7 @@ export default function AppNavigator() {
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="ConfirmOtp" component={ConfirmOtp} />
             <Stack.Screen name="MainDrawer" component={MainDrawer} />
           </Stack.Navigator>
         </NavigationContainer>
