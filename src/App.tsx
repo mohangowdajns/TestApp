@@ -1,8 +1,27 @@
 import React from "react";
+import { StatusBar } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./i18n/i18n";
 import AppNavigator from "./navigation/AppNavigator";
-import 'react-native-get-random-values';
+
 
 export default function App() {
-  
-  return <AppNavigator />;
+  return (
+    <I18nextProvider i18n={i18n}>
+  <SafeAreaProvider>
+    <StatusBar
+      translucent
+      backgroundColor="transparent"
+      barStyle="dark-content"
+    />
+
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  </SafeAreaProvider>
+</I18nextProvider>
+
+  );
 }

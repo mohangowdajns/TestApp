@@ -1,43 +1,72 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert, 
+  StatusBar
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { useTranslation } from "react-i18next";
+import RNPickerSelect from "react-native-picker-select";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: Props) {
+  const { t, i18n } = useTranslation();
   const [username, setUsername] = useState("arka");
   const [password, setPassword] = useState("1234");
+  const [language, setLanguage] = useState(i18n.language || "en");
 
   const handleLogin = () => {
     if (username === "arka" && password === "1234") {
-      navigation.replace("MainDrawer"); //  go into drawer
+      navigation.replace("MainDrawer"); // go into drawer
     } else {
-      Alert.alert("Invalid username or password!");
+      Alert.alert(t("invalidCredentials") || "Invalid username or password!");
     }
+  };
+
+  const changeLang = (lang: string) => {
+    setLanguage(lang);
+    i18n.changeLanguage(lang);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <View style={styles.dropdownWrapper}>
+        <RNPickerSelect
+          value={language}
+          onValueChange={(value: string) => changeLang(value)}
+          items={[
+            { label: "English", value: "en" },
+            { label: "हिंदी", value: "hi" },
+          ]}
+        />
+      </View>
+
+      <Text style={styles.title}>{t("login")}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder={t("username") || "Username"}
         value={username}
         onChangeText={setUsername}
       />
 
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder={t("password") || "Password"}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>{t("login")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -61,4 +90,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  dropdownWrapper: {
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
 });

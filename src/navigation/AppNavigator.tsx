@@ -6,42 +6,47 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import {
-  NavigationContainer,
-  DrawerActions,
-} from "@react-navigation/native";
-import {
-  createNativeStackNavigator,
-} from "@react-navigation/native-stack";
+import { DrawerActions } from "@react-navigation/native";
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { useTranslation } from "react-i18next";
 
 import LoginScreen from "../screens/Auth/LoginScreen";
 import NotificationsScreen from "../screens/Notifications/NotificationsScreen";
 import SettingsScreen from "../screens/Settings/SettingsScreen";
-import MainTabs from "./MainTabs"; // bottom tabs
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import MapScreen from "../screens/Maps/MapScreen.tsx";
+import MainTabs from "./MainTabs";
+import MapScreen from "../screens/Maps/MapScreen";
+import LeadForm from "../components/LeadForm";
+import LeadList from "../components/LeadList";
+import PaymentScreen from "../screens/Payments/PaymentScreen";
 
-// Stack type
+
 export type RootStackParamList = {
   Login: undefined;
   MainDrawer: undefined;
+  AddLead: { project: { id: number; name: string; status: string } };
+  LeadForm: { project: { id: number; name: string; status: string } };
+  PaymentScreen: { project: { id: number; name: string; status: string } };
+  SolarPanel3D: { project: { id: number; name: string; status: string } };
+  TestGLView: { project: { id: number; name: string; status: string } };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
 function MainDrawer() {
+  const { t } = useTranslation();
+
   return (
     <Drawer.Navigator
-      //  Custom sidebar design
       drawerContent={(drawerProps) => (
-        <View style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom", "left", "right"]}>
           {/* Profile section */}
           <View style={styles.header}>
             <Image
@@ -52,44 +57,29 @@ function MainDrawer() {
             <Text style={styles.email}>arka@example.com</Text>
           </View>
 
-          {/* Default items (Home, Notifications, Settings) */}
           <DrawerContentScrollView {...drawerProps}>
             <DrawerItemList {...drawerProps} />
           </DrawerContentScrollView>
 
           {/* Footer with Logout */}
           <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.logoutBtn}
-            onPress={() => drawerProps.navigation.navigate("Login")}
-          >
-            <Icon name="logout" size={22} color="#E53935" />
-            <Text style={styles.logoutText}> Logout</Text>
-          </TouchableOpacity>
-
+            <TouchableOpacity
+              style={styles.logoutBtn}
+              onPress={() => drawerProps.navigation.navigate("Login")}
+            >
+              <Icon name="logout" size={22} color="#E53935" />
+              <Text style={styles.logoutText}> {t("logout")}</Text>
+            </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       )}
-      screenOptions={({ navigation }) => ({
-        headerLeft: () => (
-          <TouchableOpacity
-            style={{ marginLeft: 15 }}
-            onPress={() =>
-              navigation.dispatch(DrawerActions.toggleDrawer())
-            }
-          >
-            <Text style={{ fontSize: 22 }}>☰</Text>
-          </TouchableOpacity>
-        ),
-        drawerActiveTintColor: "#3A5FE8",
-        drawerLabelStyle: { fontSize: 15, fontWeight: "500" },
-      })}
+
     >
       <Drawer.Screen
         name="MainTabs"
         component={MainTabs}
         options={{
-          title: "Home",
+          title: t("home"),
           drawerIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />
           ),
@@ -99,6 +89,7 @@ function MainDrawer() {
         name="Notifications"
         component={NotificationsScreen}
         options={{
+          title: t("notifications"),
           drawerIcon: ({ color, size }) => (
             <Icon name="notifications" size={size} color={color} />
           ),
@@ -108,17 +99,39 @@ function MainDrawer() {
         name="Settings"
         component={SettingsScreen}
         options={{
+          title: t("settings"),
           drawerIcon: ({ color, size }) => (
             <Icon name="settings" size={size} color={color} />
           ),
         }}
       />
-       <Drawer.Screen
+      <Drawer.Screen
         name="MapScreen"
         component={MapScreen}
         options={{
+          title: t("map"),
           drawerIcon: ({ color, size }) => (
             <Icon name="map" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Lead List"
+        component={LeadList}
+        options={{
+          title: t("leads"),
+          drawerIcon: ({ color, size }) => (
+            <Icon name="add-business" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="PaymentScreen"
+        component={PaymentScreen}
+        options={{
+          title: t("Payments"),
+          drawerIcon: ({ color, size }) => (
+            <Icon name="payment" size={size} color={color} />
           ),
         }}
       />
@@ -128,17 +141,16 @@ function MainDrawer() {
 
 export default function AppNavigator() {
   return (
-    <SafeAreaProvider>
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="MainDrawer" component={MainDrawer} />
-      </Stack.Navigator>
-    </NavigationContainer>
-    </SafeAreaProvider>
+    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="MainDrawer" component={MainDrawer} />
+      <Stack.Screen
+        name="LeadForm"
+        component={LeadForm}
+        options={{ headerShown: true, title: "Lead Form" }}
+      />
+
+    </Stack.Navigator>
   );
 }
 
