@@ -25,6 +25,7 @@ import MapScreen from "../screens/Maps/MapScreen";
 import LeadForm from "../components/LeadForm";
 import LeadList from "../components/LeadList";
 import PaymentScreen from "../screens/Payments/PaymentScreen";
+import { useAuthStore } from "../store/authStore";
 
 
 export type RootStackParamList = {
@@ -42,7 +43,8 @@ const Drawer = createDrawerNavigator();
 
 function MainDrawer() {
   const { t } = useTranslation();
-
+  const { isLoggedIn,logout } = useAuthStore();
+  console.log('isLoggedIn on startup:', isLoggedIn)
   return (
     <Drawer.Navigator
       drawerContent={(drawerProps) => (
@@ -65,11 +67,15 @@ function MainDrawer() {
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.logoutBtn}
-              onPress={() => drawerProps.navigation.navigate("Login")}
+              onPress={() => {
+                logout()
+                drawerProps.navigation.navigate('Login' as never)
+              }}
             >
               <Icon name="logout" size={22} color="#E53935" />
-              <Text style={styles.logoutText}> {t("logout")}</Text>
+              <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
+
           </View>
         </SafeAreaView>
       )}
@@ -140,8 +146,9 @@ function MainDrawer() {
 }
 
 export default function AppNavigator() {
+  const { isLoggedIn } = useAuthStore();
   return (
-    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName={isLoggedIn ? 'MainDrawer' : 'Login'} screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="MainDrawer" component={MainDrawer} />
       <Stack.Screen

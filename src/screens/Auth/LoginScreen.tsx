@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   View, 
   Text, 
@@ -12,6 +12,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useTranslation } from "react-i18next";
 import RNPickerSelect from "react-native-picker-select";
+import { useAuthStore } from "../../store/authStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
@@ -20,14 +21,20 @@ export default function LoginScreen({ navigation }: Props) {
   const [username, setUsername] = useState("arka");
   const [password, setPassword] = useState("1234");
   const [language, setLanguage] = useState(i18n.language || "en");
+  const { login, isLoggedIn } = useAuthStore()
+ console.log('isLoggedIn on startup:', isLoggedIn)
 
-  const handleLogin = () => {
-    if (username === "arka" && password === "1234") {
-      navigation.replace("MainDrawer"); // go into drawer
-    } else {
-      Alert.alert(t("invalidCredentials") || "Invalid username or password!");
-    }
-  };
+  useEffect(() => {
+  if (isLoggedIn) {
+    navigation.replace('MainDrawer')
+  }
+}, [isLoggedIn])
+
+const handleLogin = async () => {
+  const success = login(username, password);
+  if (success) navigation.replace('MainDrawer');
+  else Alert.alert('Invalid username or password!');
+};
 
   const changeLang = (lang: string) => {
     setLanguage(lang);
