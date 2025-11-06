@@ -13,6 +13,7 @@ import {
 import messaging from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { navigate } from '../../navigation/navigationService';
 
 // 1. Background/Quit State Handler (MUST be outside component)
 messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -88,6 +89,7 @@ export default function NotificationsScreen() {
     // 3. Notification tapped from background
     const unsubscribeOnOpened = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log(' Notification opened app from background:', remoteMessage);
+      handleNotificationNavigation(remoteMessage);
       // TODO: handle navigation if needed (remoteMessage.data)
     });
 
@@ -97,6 +99,7 @@ export default function NotificationsScreen() {
       .then(remoteMessage => {
         if (remoteMessage) {
           console.log(' Notification opened app from quit:', remoteMessage);
+          handleNotificationNavigation(remoteMessage);
           // TODO: handle navigation if needed (remoteMessage.data)
         }
       });
@@ -106,6 +109,24 @@ export default function NotificationsScreen() {
       unsubscribeOnOpened();
     };
   }, []);
+
+
+
+  const handleNotificationNavigation = (remoteMessage: any) => {
+    const screenName = remoteMessage?.notification?.body?.trim()?.toLowerCase();
+
+    if (screenName === 'notifications') {
+      navigate('Notifications');
+    } else if (screenName === 'lead list') {
+      navigate('Lead List');
+    } else if (screenName === 'paymentscreen') {
+      navigate('PaymentScreen');
+    } else {
+      console.log('Unknown screen name in notification body:', screenName);
+    }
+  };
+
+
 
   const copyToClipboard = () => {
     if (fcmToken) {

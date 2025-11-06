@@ -9,12 +9,15 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import AudioRecorderPlayer from "react-native-nitro-sound";
 import RNFS from "react-native-fs";
+import PaymentScreen from "../screens/Payments/PaymentScreen";
 
 export default function LeadFormScreen() {
   const [recording, setRecording] = useState(false);
@@ -51,7 +54,6 @@ export default function LeadFormScreen() {
       const tempPath = await AudioRecorderPlayer.stopRecorder();
       setRecording(false);
 
-      // Move to Downloads folder
       const fileName = `lead_audio_${Date.now()}.mp3`;
       const downloadDir =
         Platform.OS === "android"
@@ -86,7 +88,7 @@ export default function LeadFormScreen() {
     }
   };
 
-  // ---- Camera ----
+  // ---- Camera / Gallery ----
   const takePhoto = async () => {
     const ok = await requestPermission(PermissionsAndroid.PERMISSIONS.CAMERA);
     if (!ok) return Alert.alert("Permission denied", "Camera access denied");
@@ -108,7 +110,6 @@ export default function LeadFormScreen() {
     );
   };
 
-  // ---- Gallery ----
   const pickPhoto = async () => {
     launchImageLibrary(
       { mediaType: "photo", quality: 0.7, includeBase64: true },
@@ -127,6 +128,27 @@ export default function LeadFormScreen() {
     );
   };
 
+  // ---- Call / WhatsApp ----
+  const makeCall = (phoneNumber: string) => {
+    const phoneUrl = `tel:${phoneNumber}`;
+    Linking.canOpenURL(phoneUrl)
+      .then((supported) => {
+        if (!supported) {
+          Alert.alert("Error", "Calling not supported on this device");
+        } else {
+          return Linking.openURL(phoneUrl);
+        }
+      })
+      .catch((err) => console.error("Call error:", err));
+  };
+
+  const openWhatsApp = (phone: string, message: string) => {
+    const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    Linking.openURL(url).catch(() =>
+      Alert.alert("Error", "Make sure WhatsApp is installed")
+    );
+  };
+
   // ---- Save Lead ----
   const saveLead = async () => {
     const payload = {
@@ -137,16 +159,28 @@ export default function LeadFormScreen() {
         ? photoBase64.substring(0, 80) + "..."
         : "No Base64 Image",
     };
-
     Alert.alert("Lead Saved (POC)", JSON.stringify(payload, null, 2));
   };
 
   // ---- UI ----
   return (
-    <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.header}> Lead Form</Text>
-        <Text style={styles.subheader}>Attach Audio Notes & Photos</Text>
+
+        {/* Payment Section */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Make Payment</Text>
+          <PaymentScreen />
+        </View>
+
+        {/* Chat Section */}
+        <TouchableOpacity
+          style={styles.statCard}
+          onPress={() => openWhatsApp("+919113024417", "Hello, I need help!")}
+        >
+          <FontAwesome name="whatsapp" size={30} color="#25D366" />
+          <Text style={styles.statNumber}>Chat</Text>
+          <Text style={styles.statLabel}>WhatsApp</Text>
+        </TouchableOpacity>
 
         {/* Audio Section */}
         <View style={styles.card}>
@@ -208,11 +242,22 @@ export default function LeadFormScreen() {
           </View>
 
           {photoUri && (
-            <Image
-              source={{ uri: photoUri }}
-              style={styles.preview}
-            />
+            <Image source={{ uri: photoUri }} style={styles.preview} />
           )}
+        </View>
+
+        {/* Call Section */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Quick Call</Text>
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={[styles.actionBtn, { backgroundColor: "#FF9800" }]}
+              onPress={() => makeCall("+919113024417")}
+            >
+              <Icon name="call" size={28} color="#fff" />
+              <Text style={styles.btnText}>Call Lead</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Save Button */}
@@ -220,8 +265,8 @@ export default function LeadFormScreen() {
           <Icon name="save" size={24} color="#fff" />
           <Text style={styles.saveText}>Save Lead</Text>
         </TouchableOpacity>
+
       </ScrollView>
-    </SafeAreaView>
   );
 }
 
@@ -229,14 +274,19 @@ export default function LeadFormScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F7F9FC" },
   scroll: { padding: 20 },
-  header: { fontSize: 24, fontWeight: "700", marginBottom: 5, color: "#333" },
-  subheader: { fontSize: 14, color: "gray", marginBottom: 20 },
+  header: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 15,
+    color: "#333",
+    textAlign: "center",
+  },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 15,
     marginBottom: 20,
-    elevation: 2,
+    elevation: 3,
   },
   cardTitle: { fontSize: 18, fontWeight: "600", marginBottom: 10, color: "#333" },
   row: { flexDirection: "row", alignItems: "center", marginTop: 5 },
@@ -264,6 +314,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#3A5FE8",
     padding: 14,
     borderRadius: 10,
+    marginBottom: 30,
   },
   saveText: { color: "#fff", fontSize: 16, fontWeight: "700", marginLeft: 8 },
+  statCard: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: { fontSize: 18, fontWeight: "bold", marginTop: 4 },
+  statLabel: { fontSize: 12, color: "gray" },
 });

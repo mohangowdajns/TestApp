@@ -21,8 +21,6 @@ export const useAuthStore = create<AuthState>()(
             return false;  
             },
 
-
-
             logout: () => {
                 set({ isLoggedIn: false })
                 AsyncStorage.removeItem('auth-storage')

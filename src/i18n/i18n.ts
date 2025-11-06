@@ -13,7 +13,8 @@ const resources = {
       settings: "Settings",
       logout: "Logout",
       map: "Map",
-      leads: "Lead List",
+      leads: "Lead",
+      payments: "Payments",
 
       login: "Login",
       username: "Username",
@@ -31,7 +32,7 @@ const resources = {
       logout: "लॉगआउट",
       map: "मानचित्र",
       leads: "लीड सूची",
-
+      payments: "भुगतान",
       login: "लॉगिन",
       username: "उपयोगकर्ता नाम",
       password: "पासवर्ड",
@@ -48,8 +49,8 @@ const languageDetector = {
     const locales = RNLocalize.getLocales();
     cb(locales[0]?.languageCode || "en");
   },
-  init: () => {},
-  cacheUserLanguage: () => {},
+  init: () => { },
+  cacheUserLanguage: () => { },
 };
 
 i18n

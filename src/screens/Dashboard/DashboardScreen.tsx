@@ -1,12 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import SolarPage from "../../components/SolarPage";
 
 export default function DashboardScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}> Dashboard</Text>
-    </View>
-  );
+  return <SolarPage />;
 }
 
 const styles = StyleSheet.create({
