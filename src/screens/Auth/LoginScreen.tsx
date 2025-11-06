@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { TextInput, Text } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+// import { useNavigation } from '@react-navigation/native';
+
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LanguageModal from '../../modals/LanguageModal';
 import CustomButton from '../../components/CustonButton';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
   const [username, setUsername] = useState('0');
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const { i18n } = useTranslation();
 
   const handleLogin = () => {
     navigation.replace('ConfirmOtp');
@@ -21,6 +25,11 @@ export default function LoginScreen({ navigation }: Props) {
   const setMobilePhone = (phone: string) => {
     const numericText = phone.replace(/[^0-9]/g, '');
     setUsername(numericText);
+  };
+
+  const changeLang = (lang: string) => {
+    setSelectedLanguage(lang);
+    i18n.changeLanguage(lang);
   };
 
   return (
@@ -65,7 +74,7 @@ export default function LoginScreen({ navigation }: Props) {
         visible={modalVisible}
         selected={selectedLanguage}
         onSelect={lang => {
-          setSelectedLanguage(lang);
+          changeLang(lang);
           setModalVisible(false);
         }}
         onClose={() => setModalVisible(false)}
@@ -109,5 +118,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
     textAlign: 'center',
+  },
+  buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  dropdownWrapper: {
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
 });

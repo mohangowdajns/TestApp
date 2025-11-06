@@ -9,42 +9,52 @@ import {
 } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { PaperProvider } from 'react-native-paper';
-import LoginScreen from '../screens/Auth/LoginScreen';
-import ConfirmOtp from '../screens/Auth/ConfirmOtp.tsx';
-import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
-import SettingsScreen from '../screens/Settings/SettingsScreen';
-import MainTabs from './MainTabs'; // bottom tabs
+// import ConfirmOtp from '../screens/Auth/ConfirmOtp.tsx';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MapScreen from '../screens/Maps/MapScreen.tsx';
 import { useThemeContext } from '../context/ThemeContext';
 
-// Stack type
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+
+import LoginScreen from '../screens/Auth/LoginScreen';
+import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
+import SettingsScreen from '../screens/Settings/SettingsScreen';
+import MainTabs from './MainTabs';
+import MapScreen from '../screens/Maps/MapScreen';
+import LeadForm from '../components/LeadForm';
+import LeadList from '../components/LeadList';
+import PaymentScreen from '../screens/Payments/PaymentScreen';
+import { useAuthStore } from '../store/authStore';
+
 export type RootStackParamList = {
   Login: undefined;
   MainDrawer: undefined;
   ConfirmOtp: undefined;
+  AddLead: { project: { id: number; name: string; status: string } };
+  LeadForm: { project: { id: number; name: string; status: string } };
+  PaymentScreen: { project: { id: number; name: string; status: string } };
+  SolarPanel3D: { project: { id: number; name: string; status: string } };
+  TestGLView: { project: { id: number; name: string; status: string } };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
 function MainDrawer() {
+  const { t } = useTranslation();
+  const { isLoggedIn, logout } = useAuthStore();
+  console.log('isLoggedIn on startup:', isLoggedIn);
   return (
     <Drawer.Navigator
-      //  Custom sidebar design
       drawerContent={drawerProps => (
-        <View style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom', 'left', 'right']}>
           {/* Profile section */}
           <View style={styles.header}>
-            <Image
-              source={{ uri: 'https://i.pravatar.cc/150?img=12' }}
-              style={styles.avatar}
-            />
+            <Image source={{ uri: 'https://i.pravatar.cc/150?img=12' }} style={styles.avatar} />
             <Text style={styles.name}>Arka</Text>
             <Text style={styles.email}>arka@example.com</Text>
           </View>
 
-          {/* Default items (Home, Notifications, Settings) */}
           <DrawerContentScrollView {...drawerProps}>
             <DrawerItemList {...drawerProps} />
           </DrawerContentScrollView>
@@ -53,13 +63,16 @@ function MainDrawer() {
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.logoutBtn}
-              onPress={() => drawerProps.navigation.navigate('Login')}
+              onPress={() => {
+                logout();
+                drawerProps.navigation.navigate('Login' as never);
+              }}
             >
               <Icon name="logout" size={22} color="#E53935" />
-              <Text style={styles.logoutText}> Logout</Text>
+              <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       )}
       screenOptions={({ navigation }) => ({
         headerLeft: () => (
@@ -78,37 +91,48 @@ function MainDrawer() {
         name="MainTabs"
         component={MainTabs}
         options={{
-          title: 'Home',
-          drawerIcon: ({ color, size }) => (
-            <Icon name="home" size={size} color={color} />
-          ),
+          title: t('home'),
+          drawerIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />,
         }}
       />
       <Drawer.Screen
         name="Notifications"
         component={NotificationsScreen}
         options={{
-          drawerIcon: ({ color, size }) => (
-            <Icon name="notifications" size={size} color={color} />
-          ),
+          title: t('notifications'),
+          drawerIcon: ({ color, size }) => <Icon name="notifications" size={size} color={color} />,
         }}
       />
       <Drawer.Screen
         name="Settings"
         component={SettingsScreen}
         options={{
-          drawerIcon: ({ color, size }) => (
-            <Icon name="settings" size={size} color={color} />
-          ),
+          title: t('settings'),
+          drawerIcon: ({ color, size }) => <Icon name="settings" size={size} color={color} />,
         }}
       />
       <Drawer.Screen
         name="MapScreen"
         component={MapScreen}
         options={{
-          drawerIcon: ({ color, size }) => (
-            <Icon name="map" size={size} color={color} />
-          ),
+          title: t('map'),
+          drawerIcon: ({ color, size }) => <Icon name="map" size={size} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="Lead List"
+        component={LeadList}
+        options={{
+          title: t('leads'),
+          drawerIcon: ({ color, size }) => <Icon name="add-business" size={size} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="PaymentScreen"
+        component={PaymentScreen}
+        options={{
+          title: t('Payments'),
+          drawerIcon: ({ color, size }) => <Icon name="payment" size={size} color={color} />,
         }}
       />
     </Drawer.Navigator>
@@ -117,17 +141,23 @@ function MainDrawer() {
 
 export default function AppNavigator() {
   const { theme } = useThemeContext();
+  const { isLoggedIn } = useAuthStore();
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Login"
+            initialRouteName={isLoggedIn ? 'MainDrawer' : 'Login'}
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="ConfirmOtp" component={ConfirmOtp} />
+            {/* <Stack.Screen name="ConfirmOtp" component={ConfirmOtp} /> */}
             <Stack.Screen name="MainDrawer" component={MainDrawer} />
+            <Stack.Screen
+              name="LeadForm"
+              component={LeadForm}
+              options={{ headerShown: true, title: 'Lead Form' }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>
