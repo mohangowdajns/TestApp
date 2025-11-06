@@ -15,26 +15,24 @@ export default function LanguageSelector({
   selected,
   onSelect,
 }: LanguageSelectorProps) {
-  const languages = ['English', 'Hindi'];
+  const languages = [
+    { label: 'English', value: 'en' },
+    { label: 'Hindi', value: 'hi' },
+  ];
 
   return (
     <Modal isVisible={visible} onBackdropPress={onClose} style={styles.modal}>
       <View style={styles.sheet}>
         {languages.map(lang => (
           <TouchableOpacity
-            key={lang}
+            key={lang.label}
             style={styles.option}
-            onPress={() => onSelect(lang)}
+            onPress={() => onSelect(lang.value)}
           >
-            <Text
-              style={[
-                styles.optionText,
-                lang === selected && styles.selectedText,
-              ]}
-            >
-              {lang}
+            <Text style={[styles.optionText, lang.value === selected && styles.selectedText]}>
+              {lang.label}
             </Text>
-            {lang === selected && <Text style={styles.check}>✔</Text>}
+            {lang.value === selected && <Text style={styles.check}>✔</Text>}
           </TouchableOpacity>
         ))}
       </View>
