@@ -9,7 +9,7 @@ import {
 } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { PaperProvider } from 'react-native-paper';
-// import ConfirmOtp from '../screens/Auth/ConfirmOtp.tsx';
+import ConfirmOtp from '../screens/ConfirmOtp/ConfirmOtp.tsx';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useThemeContext } from '../context/ThemeContext';
 
@@ -151,7 +151,7 @@ export default function AppNavigator() {
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="Login" component={LoginScreen} />
-            {/* <Stack.Screen name="ConfirmOtp" component={ConfirmOtp} /> */}
+            <Stack.Screen name="ConfirmOtp" component={ConfirmOtp} />
             <Stack.Screen name="MainDrawer" component={MainDrawer} />
             <Stack.Screen
               name="LeadForm"
