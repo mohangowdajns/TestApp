@@ -126,7 +126,7 @@ export const createHeaderStyle = (theme: Theme): ViewStyle => ({
   ...theme.shadows.md,
 });
 
-export const createHeaderTextStyle = (theme: Theme): TextStyle => ({
+export const createHeaderTextStyle = (_theme: Theme): TextStyle => ({
   fontSize: 18,
   fontWeight: 'bold',
   color: '#FFFFFF',

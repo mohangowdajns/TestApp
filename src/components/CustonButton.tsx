@@ -1,7 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
-import { useTheme } from 'react-native-paper';
-import { Theme } from '../theme/theme';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface CustomButtonProps {
   handlePress: () => void;
@@ -18,7 +17,7 @@ export default function CustomButton({
   disabled = false,
   style,
 }: CustomButtonProps) {
-  const theme = useTheme() as Theme;
+  const theme = useAppTheme();
 
   const getButtonStyle = () => {
     switch (variant) {

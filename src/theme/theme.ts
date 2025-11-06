@@ -88,8 +88,8 @@ export const animation = {
   slow: 500,
 } as const;
 
-// Create light theme
-export const lightTheme = {
+// Create light theme - for PaperProvider (must follow MD3 structure)
+const lightPaperTheme = {
   ...DefaultLightTheme,
   colors: {
     ...DefaultLightTheme.colors,
@@ -140,16 +140,10 @@ export const lightTheme = {
     border: lightColors.border,
   },
   fonts: fontConfig,
-  spacing,
-  borderRadius,
-  shadows,
-  layout,
-  animation,
-  dark: false,
 } as const;
 
-// Create dark theme
-export const darkTheme = {
+// Create dark theme - for PaperProvider (must follow MD3 structure)
+const darkPaperTheme = {
   ...DefaultDarkTheme,
   colors: {
     ...DefaultDarkTheme.colors,
@@ -158,15 +152,15 @@ export const darkTheme = {
     primaryContainer: darkColors.primaryDark,
     onPrimaryContainer: darkColors.primaryLight,
     secondary: darkColors.info,
-    onSecondary: '#000000',
+    onSecondary: '#FFFFFF',
     secondaryContainer: '#1B4A7A',
     onSecondaryContainer: darkColors.info,
     tertiary: darkColors.accent,
-    onTertiary: '#000000',
+    onTertiary: '#FFFFFF',
     tertiaryContainer: '#00434A',
     onTertiaryContainer: darkColors.accent,
     error: darkColors.error,
-    onError: '#000000',
+    onError: '#FFFFFF',
     errorContainer: '#5F1E1A',
     onErrorContainer: darkColors.error,
     background: darkColors.background,
@@ -200,12 +194,29 @@ export const darkTheme = {
     border: darkColors.border,
   },
   fonts: fontConfig,
+} as const;
+
+// Extended theme with custom properties for component usage
+export const lightTheme = {
+  ...lightPaperTheme,
   spacing,
   borderRadius,
   shadows,
   layout,
   animation,
-  dark: true,
 } as const;
+
+export const darkTheme = {
+  ...darkPaperTheme,
+  spacing,
+  borderRadius,
+  shadows,
+  layout,
+  animation,
+} as const;
+
+// Paper provider themes (without custom properties)
+export const paperLightTheme = lightPaperTheme;
+export const paperDarkTheme = darkPaperTheme;
 
 export type Theme = typeof lightTheme;

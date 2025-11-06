@@ -150,8 +150,10 @@ export default function LeadList() {
               style={createStatCardStyle(theme)}
               onPress={() => openWhatsApp('+919113024417', 'Hello, I need help!')}
             >
-              <FontAwesome name="whatsapp" size={30} color="#25D366" />
-              <Text style={[createStatNumberStyle(theme), { color: '#25D366' }]}>Chat</Text>
+              <FontAwesome name="whatsapp" size={30} color={theme.colors.success} />
+              <Text style={[createStatNumberStyle(theme), { color: theme.colors.success }]}>
+                Chat
+              </Text>
               <Text style={createStatLabelStyle(theme)}>WhatsApp</Text>
             </TouchableOpacity>
           </View>

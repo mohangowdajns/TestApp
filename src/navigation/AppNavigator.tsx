@@ -10,11 +10,10 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { PaperProvider } from 'react-native-paper';
 import ConfirmOtp from '../screens/ConfirmOtp/ConfirmOtp.tsx';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeContext } from '../context/ThemeContext';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 import LoginScreen from '../screens/Auth/LoginScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
@@ -28,8 +27,8 @@ import { useAuthStore } from '../store/authStore';
 
 export type RootStackParamList = {
   Login: undefined;
-  MainDrawer: undefined;
   ConfirmOtp: undefined;
+  MainDrawer: undefined;
   AddLead: { project: { id: number; name: string; status: string } };
   LeadForm: { project: { id: number; name: string; status: string } };
   PaymentScreen: { project: { id: number; name: string; status: string } };
@@ -40,59 +39,108 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
+// Drawer header component
+function DrawerHeader() {
+  const theme = useAppTheme();
+  return (
+    <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+      <Image source={{ uri: 'https://i.pravatar.cc/150?img=12' }} style={styles.avatar} />
+      <Text style={[styles.name, styles.nameText, { color: theme.colors.onPrimary }]}>Arka</Text>
+      <Text style={[styles.email, styles.emailText]}>arka@example.com</Text>
+    </View>
+  );
+}
+
+// Drawer footer component
+function DrawerFooter({ drawerProps }: { drawerProps: any }) {
+  const theme = useAppTheme();
+  const { logout } = useAuthStore();
+
+  return (
+    <View style={[styles.footer, { borderTopColor: theme.colors.divider }]}>
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={() => {
+          logout();
+          drawerProps.navigation.navigate('Login' as never);
+        }}
+      >
+        <Icon name="logout" size={22} color={theme.colors.error} />
+        <Text style={[styles.logoutText, { color: theme.colors.error }]}>Logout</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// Drawer content component
+function DrawerContent(drawerProps: any) {
+  return (
+    <SafeAreaView style={styles.drawerSafe} edges={['top', 'bottom', 'left', 'right']}>
+      <DrawerHeader />
+      <DrawerContentScrollView {...drawerProps}>
+        <DrawerItemList {...drawerProps} />
+      </DrawerContentScrollView>
+      <DrawerFooter drawerProps={drawerProps} />
+    </SafeAreaView>
+  );
+}
+
+// Header left button component
+const HeaderLeftButton = React.memo(({ navigation }: { navigation: any }) => (
+  <TouchableOpacity
+    style={styles.headerLeftButton}
+    onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+  >
+    <Text style={styles.hamburger}>☰</Text>
+  </TouchableOpacity>
+));
+
+// Icon renderers for drawer screens
+const HomeIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="home" size={size} color={color} />
+);
+
+const NotificationsIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="notifications" size={size} color={color} />
+);
+
+const SettingsIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="settings" size={size} color={color} />
+);
+
+const MapIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="map" size={size} color={color} />
+);
+
+const LeadsIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="add-business" size={size} color={color} />
+);
+
+const PaymentIcon = ({ color, size }: { color: string; size: number }) => (
+  <Icon name="payment" size={size} color={color} />
+);
+
 function MainDrawer() {
   const { t } = useTranslation();
-  const { isLoggedIn, logout } = useAuthStore();
-  console.log('isLoggedIn on startup:', isLoggedIn);
+  const theme = useAppTheme();
+
   return (
     <Drawer.Navigator
-      drawerContent={drawerProps => (
-        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom', 'left', 'right']}>
-          {/* Profile section */}
-          <View style={styles.header}>
-            <Image source={{ uri: 'https://i.pravatar.cc/150?img=12' }} style={styles.avatar} />
-            <Text style={styles.name}>Arka</Text>
-            <Text style={styles.email}>arka@example.com</Text>
-          </View>
-
-          <DrawerContentScrollView {...drawerProps}>
-            <DrawerItemList {...drawerProps} />
-          </DrawerContentScrollView>
-
-          {/* Footer with Logout */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.logoutBtn}
-              onPress={() => {
-                logout();
-                drawerProps.navigation.navigate('Login' as never);
-              }}
-            >
-              <Icon name="logout" size={22} color="#E53935" />
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      )}
-      screenOptions={({ navigation }) => ({
-        headerLeft: () => (
-          <TouchableOpacity
-            style={{ marginLeft: 15 }}
-            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
-          >
-            <Text style={{ fontSize: 22 }}>☰</Text>
-          </TouchableOpacity>
-        ),
-        drawerActiveTintColor: '#3A5FE8',
-        drawerLabelStyle: { fontSize: 15, fontWeight: '500' },
-      })}
+      drawerContent={DrawerContent}
+      screenOptions={({ navigation }) => {
+        return {
+          headerLeft: () => <HeaderLeftButton navigation={navigation} />,
+          drawerActiveTintColor: theme.colors.primary,
+          drawerLabelStyle: { fontSize: 15, fontWeight: '500' },
+        };
+      }}
     >
       <Drawer.Screen
         name="MainTabs"
         component={MainTabs}
         options={{
           title: t('home'),
-          drawerIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />,
+          drawerIcon: HomeIcon,
         }}
       />
       <Drawer.Screen
@@ -100,7 +148,7 @@ function MainDrawer() {
         component={NotificationsScreen}
         options={{
           title: t('notifications'),
-          drawerIcon: ({ color, size }) => <Icon name="notifications" size={size} color={color} />,
+          drawerIcon: NotificationsIcon,
         }}
       />
       <Drawer.Screen
@@ -108,7 +156,7 @@ function MainDrawer() {
         component={SettingsScreen}
         options={{
           title: t('settings'),
-          drawerIcon: ({ color, size }) => <Icon name="settings" size={size} color={color} />,
+          drawerIcon: SettingsIcon,
         }}
       />
       <Drawer.Screen
@@ -116,7 +164,7 @@ function MainDrawer() {
         component={MapScreen}
         options={{
           title: t('map'),
-          drawerIcon: ({ color, size }) => <Icon name="map" size={size} color={color} />,
+          drawerIcon: MapIcon,
         }}
       />
       <Drawer.Screen
@@ -124,7 +172,7 @@ function MainDrawer() {
         component={LeadList}
         options={{
           title: t('leads'),
-          drawerIcon: ({ color, size }) => <Icon name="add-business" size={size} color={color} />,
+          drawerIcon: LeadsIcon,
         }}
       />
       <Drawer.Screen
@@ -132,7 +180,7 @@ function MainDrawer() {
         component={PaymentScreen}
         options={{
           title: t('Payments'),
-          drawerIcon: ({ color, size }) => <Icon name="payment" size={size} color={color} />,
+          drawerIcon: PaymentIcon,
         }}
       />
     </Drawer.Navigator>
@@ -140,19 +188,27 @@ function MainDrawer() {
 }
 
 export default function AppNavigator() {
-  const { theme } = useThemeContext();
+  const { paperTheme } = useThemeContext();
   const { isLoggedIn } = useAuthStore();
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={theme}>
+      <PaperProvider theme={paperTheme}>
         <NavigationContainer>
           <Stack.Navigator
             initialRouteName={isLoggedIn ? 'MainDrawer' : 'Login'}
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="ConfirmOtp" component={ConfirmOtp} />
-            <Stack.Screen name="MainDrawer" component={MainDrawer} />
+            <Stack.Screen
+              name={'ConfirmOtp' as 'Login'}
+              component={ConfirmOtp}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MainDrawer"
+              component={MainDrawer}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="LeadForm"
               component={LeadForm}
@@ -167,7 +223,6 @@ export default function AppNavigator() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: '#3A5FE8',
     paddingVertical: 40,
     alignItems: 'center',
   },
@@ -179,14 +234,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
-  name: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  email: { fontSize: 14, color: '#e0e0e0' },
-  footer: { borderTopWidth: 1, borderTopColor: '#ddd', padding: 15 },
+  name: { fontWeight: 'bold', color: '#fff' },
+  nameText: { fontSize: 18 },
+  email: { color: '#e0e0e0' },
+  emailText: { fontSize: 14 },
+  footer: { borderTopWidth: 1, padding: 15 },
   logoutBtn: { flexDirection: 'row', alignItems: 'center' },
   logoutText: {
     marginLeft: 10,
-    fontSize: 16,
-    color: '#E53935',
     fontWeight: '600',
+    fontSize: 16,
   },
+  drawerSafe: { flex: 1 },
+  headerLeftButton: { marginLeft: 15 },
+  hamburger: { fontSize: 22 },
 });
