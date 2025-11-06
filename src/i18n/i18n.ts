@@ -15,7 +15,10 @@ const resources = {
       map: "Map",
       leads: "Lead",
       payments: "Payments",
-
+      siteSurveyForm: "Site Survey Form",
+      goSolarPage: "Go Solar",
+      documentProposalRef: "Document Proposal Reference",
+      marketingPortal: "Marketing Portal",
       login: "Login",
       username: "Username",
       password: "Password",
@@ -33,10 +36,15 @@ const resources = {
       map: "मानचित्र",
       leads: "लीड सूची",
       payments: "भुगतान",
+      siteSurveyForm: "साइट सर्वेक्षण फॉर्म",
+      goSolarPage: "गो सोलर",
+      documentProposalRef: "दस्तावेज़ प्रस्ताव",
+      marketingPortal: "मार्केटिंग पोर्टल",
       login: "लॉगिन",
       username: "उपयोगकर्ता नाम",
       password: "पासवर्ड",
       invalidCredentials: "अमान्य उपयोगकर्ता नाम या पासवर्ड!",
+
     },
   },
 };

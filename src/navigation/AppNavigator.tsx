@@ -26,11 +26,20 @@ import LeadForm from "../components/LeadForm";
 import LeadList from "../components/LeadList";
 import PaymentScreen from "../screens/Payments/PaymentScreen";
 import { useAuthStore } from "../store/authStore";
+import SolarPage from "../components/SolarPage";
+import SolarPage1 from "../components/SolarPage1";
+import { t } from "i18next";
+import SolarPage2 from "../components/SolarPage2";
+import SolarPage3 from "../components/SolarPage3";
 
 export type RootStackParamList = {
   Login: undefined;
   MainDrawer: undefined;
   LeadForm: { project: { id: number; name: string; status: string } };
+  SolarPage: undefined;
+  SolarPage1: undefined;
+  SolarPage2: undefined;
+  SolarPage3: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -141,7 +150,7 @@ function MainDrawer() {
         name="PaymentScreen"
         component={PaymentScreen}
         options={{
-          title: t("payments"), // ✅ lowercase key matches i18n JSON
+          title: t("payments"), //  lowercase key matches i18n JSON
           drawerIcon: ({ color, size }) => (
             <Icon name="payment" size={size} color={color} />
           ),
@@ -166,6 +175,28 @@ export default function AppNavigator() {
         component={LeadForm}
         options={{ headerShown: true, title: "Lead Form" }}
       />
+      <Stack.Screen
+        name="SolarPage"
+        component={SolarPage}
+        options={{ headerShown: true, title: t("siteSurveyForm") }}
+      />
+      <Stack.Screen
+        name="SolarPage1"
+        component={SolarPage1}
+        options={{ headerShown: true, title: t("goSolarPage") }}
+      />
+      <Stack.Screen
+        name="SolarPage2"
+        component={SolarPage2}
+        options={{ headerShown: true, title: t("documentProposalRef") }}
+      />
+      <Stack.Screen
+        name="SolarPage3"
+        component={SolarPage3}
+        options={{ headerShown: true, title: t("marketingPortal") }}
+      />
+
+
     </Stack.Navigator>
   );
 }

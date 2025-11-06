@@ -7,13 +7,15 @@ import DashboardScreen from "../screens/Dashboard/DashboardScreen";
 import HomeScreen from "../screens/Home/HomeScreen";
 import ProfileScreen from "../screens/Profile/ProfileScreen";
 import LeadFormScreen from "../components/LeadForm";
+import MapScreen from "../screens/Maps/MapScreen";
 
 export type TabParamList = {
   Dashboard: undefined;
   Home: undefined;
   Leads: undefined;
   Profile: undefined;
-  Notifications:undefined
+  Notifications: undefined
+  Map: undefined
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -23,7 +25,7 @@ export default function MainTabs() {
 
   return (
     <Tab.Navigator
-          initialRouteName="Home"
+      initialRouteName="Home"
       screenOptions={({ route }) => ({
         headerShown: false,
         headerTitleAlign: "center",
@@ -32,18 +34,19 @@ export default function MainTabs() {
           if (route.name === "Dashboard") iconName = "dashboard";
           else if (route.name === "Leads") iconName = "assignment";
           // else if (route.name === "Profile") iconName = "person";
-           else if (route.name === "Notifications") iconName = "notifications";
+          else if (route.name === "Notifications") iconName = "notifications";
+          else if (route.name === "Map") iconName = "map";
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: "#3A5FE8",
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
         options={{ title: t("dashboard") }}
-      />
+      /> */}
       <Tab.Screen
         name="Home"
         component={HomeScreen}
@@ -58,6 +61,11 @@ export default function MainTabs() {
         name="Notifications"
         component={ProfileScreen}
         options={{ title: t("notifications") }}
+      />
+      <Tab.Screen
+        name="Map"
+        component={MapScreen}
+        options={{ title: t("map") }}
       />
     </Tab.Navigator>
 
