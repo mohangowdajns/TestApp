@@ -9,124 +9,21 @@ const ProposalGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  const showPDFNotification = async (filePath: string, fileName: string) => {
-    // Request permissions first
-    await notifee.requestPermission();
-
-    // Create notification channel
-    const channelId = await notifee.createChannel({
-      id: 'pdf_downloads',
-      name: 'PDF Downloads',
-      importance: AndroidImportance.HIGH,
-    });
-
-    // Show notification with action buttons
-    await notifee.displayNotification({
-      title: '📄 Solar Proposal Ready!',
-      body: `${fileName} has been generated successfully`,
-      android: {
-        channelId,
-        importance: AndroidImportance.HIGH,
-        style: {
-          type: AndroidStyle.BIGTEXT,
-          text: `Your solar proposal PDF is ready! Tap to open or share with others.\n\nFile: ${fileName}`,
-        },
-        largeIcon: 'https://img.icons8.com/color/96/pdf.png',
-        actions: [
-          {
-            title: '📱 Open PDF',
-            pressAction: {
-              id: 'open-pdf',
-            },
-          },
-          {
-            title: '📤 Share',
-            pressAction: {
-              id: 'share-pdf',
-            },
-          },
-        ],
-      },
-      data: {
-        filePath: filePath,
-        fileName: fileName,
-      },
-    });
-  };
-
-  const openPDF = async (filePath: string) => {
-    try {
-      // Try to open with default PDF viewer
-      const supported = await Linking.canOpenURL(filePath);
-      if (supported) {
-        await Linking.openURL(`file://${filePath}`);
-      } else {
-        // Fallback: try to open with Android intent
-        await Linking.openURL(`content://com.android.externalstorage.documents/document/primary:Download/${filePath.split('/').pop()}`);
+  useEffect(() => {
+    // Set up notification action handlers
+    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
+      if (type === EventType.ACTION_PRESS) {
+        const { pressAction, notification } = detail;
+        const data = notification?.data as { filePath?: string; fileName?: string } || {};
+        const { filePath, fileName } = data;
+        
+        if (pressAction?.id && filePath && fileName) {
+          SmartFileManager.handleNotificationAction(pressAction.id, filePath, fileName);
+        }
       }
-    } catch (error) {
-      console.log('Could not open PDF:', error);
-      Alert.alert('Cannot Open PDF', 'Please use a file manager to open the PDF manually.');
-    }
-  };
+    });
 
-  const sharePDF = async (filePath: string, fileName: string) => {
-    try {
-      await Share.share({
-        url: `file://${filePath}`,
-        title: 'Solar Proposal',
-        message: `Check out this solar proposal: ${fileName}`,
-      });
-    } catch (error) {
-      console.log('Could not share PDF:', error);
-      Alert.alert('Cannot Share', 'Please try sharing the PDF from your file manager.');
-    }
-  };
-
-  // Set up notification action handlers
-  React.useEffect(() => {
-    const setupNotificationHandlers = async () => {
-      // Handle notification actions
-      notifee.onForegroundEvent(({ type, detail }) => {
-        if (type === 1 && detail.pressAction?.id) { // EventType.ACTION_PRESS
-          const { filePath, fileName } = detail.notification?.data || {};
-          
-          switch (detail.pressAction.id) {
-            case 'open-pdf':
-              if (filePath && typeof filePath === 'string') openPDF(filePath);
-              break;
-            case 'share-pdf':
-              if (filePath && fileName && typeof filePath === 'string' && typeof fileName === 'string') {
-                sharePDF(filePath, fileName);
-              }
-              break;
-          }
-        }
-      });
-
-      // Handle background notification actions
-      notifee.onBackgroundEvent(async ({ type, detail }) => {
-        if (type === 1 && detail.pressAction?.id) { // EventType.ACTION_PRESS
-          const { filePath } = detail.notification?.data || {};
-          
-          switch (detail.pressAction.id) {
-            case 'open-pdf':
-              if (filePath && typeof filePath === 'string') {
-                // In background, we can only trigger system intents
-                await Linking.openURL(`file://${filePath}`);
-              }
-              break;
-            case 'share-pdf':
-              if (filePath && typeof filePath === 'string') {
-                await Linking.openURL(`file://${filePath}`);
-              }
-              break;
-          }
-        }
-      });
-    };
-
-    setupNotificationHandlers();
+    return unsubscribe;
   }, []);
 
   const createHtmlContent = (customer: any) => {
@@ -380,22 +277,6 @@ const ProposalGenerator = () => {
   };
 
   const showPreviewModal = () => {
-    const customer = {
-      name: "Deepanshu Sharma",
-      address: "Flat 123, 6th Main Road, Jayanagar, Bengaluru - 560041, INDIA",
-      solarCapacity: "3 kWp",
-      roofArea: "360 Sq. ft",
-      roofAreaM2: "33 Sq. m",
-      billSavings: "55%",
-      co2Reduced: "47",
-      treesPlanted: "774",
-      coalAvoided: "23",
-      price: "₹1,86,380",
-      contactPerson: "Aravind S.",
-      email: "risingsun@email.com",
-      phone: "80647 86549"
-    };
-
     setShowPreview(true);
   };
 
@@ -422,111 +303,47 @@ const ProposalGenerator = () => {
       const htmlContent = createHtmlContent(customer);
       const fileName = 'SolarProposal_' + customer.name.replace(/\s+/g, '_') + '.pdf';
 
-      console.log('📁 Available directories:');
-      console.log('- Documents:', RNFS.DocumentDirectoryPath);
-      console.log('- Downloads:', RNFS.DownloadDirectoryPath);
-      console.log('- External:', RNFS.ExternalDirectoryPath);
+      console.log('📁 Generating PDF...');
+      
+      // First generate PDF in app cache (guaranteed to work)
+      const cacheOptions = {
+        html: htmlContent,
+        fileName: fileName,
+        base64: false,
+        width: 612,
+        height: 792,
+        paddingLeft: 16,
+        paddingRight: 16,
+        paddingTop: 16,
+        paddingBottom: 16,
+        filePath: RNFS.CachesDirectoryPath + '/' + fileName,
+      };
 
-      // Try multiple locations for better compatibility
-      const attemptLocations = [
-        {
-          name: "Internal Documents",
-          options: {
-            html: htmlContent,
-            fileName: fileName,
-            base64: false,
-            width: 612,
-            height: 792,
-            paddingLeft: 16,
-            paddingRight: 16,
-            paddingTop: 16,
-            paddingBottom: 16,
-            filePath: RNFS.DocumentDirectoryPath + '/' + fileName,
-          }
-        },
-        {
-          name: "Downloads Directory", 
-          options: {
-            html: htmlContent,
-            fileName: fileName,
-            directory: 'Downloads',
-            width: 612,
-            height: 792,
-            paddingLeft: 16,
-            paddingRight: 16,
-            paddingTop: 16,
-            paddingBottom: 16,
-          }
-        },
-        {
-          name: "External Storage",
-          options: {
-            html: htmlContent,
-            fileName: fileName,
-            base64: false,
-            width: 612,
-            height: 792,
-            paddingLeft: 16,
-            paddingRight: 16,
-            paddingTop: 16,
-            paddingBottom: 16,
-            filePath: RNFS.ExternalDirectoryPath + '/' + fileName,
-          }
-        }
-      ];
+      const pdf = await generatePDF(cacheOptions);
+      console.log('✅ PDF generated in cache:', pdf.filePath);
 
-      let success = false;
-      let finalPath = '';
-
-      for (const location of attemptLocations) {
-        try {
-          console.log(`🔄 Attempting: ${location.name}`);
-          const pdf = await generatePDF(location.options);
-          
-          // Verify the file actually exists
-          const fileExists = await RNFS.exists(pdf.filePath);
-          if (fileExists) {
-            const stats = await RNFS.stat(pdf.filePath);
-            console.log(`✅ SUCCESS: ${location.name}`);
-            console.log(`   Path: ${pdf.filePath}`);
-            console.log(`   Size: ${stats.size} bytes`);
-            finalPath = pdf.filePath;
-            success = true;
-            break;
-          } else {
-            console.log(`❌ File not created in ${location.name}`);
-          }
-        } catch (error) {
-          console.log(`❌ ERROR in ${location.name}:`, (error as Error).message || error);
-          continue;
-        }
-      }
-
-      if (success) {
-        // Try to copy to external Downloads folder
-        try {
-          const externalDownloads = '/storage/emulated/0/Download/' + fileName;
-          await RNFS.copyFile(finalPath, externalDownloads);
-          console.log(`📥 Also copied to Downloads: ${externalDownloads}`);
-          
-          // Show notification instead of alert
-          await showPDFNotification(externalDownloads, fileName);
-          
-        } catch (copyError) {
-          console.log('Could not copy to Downloads, showing notification for cache location');
-          
-          // Show notification for cache location
-          await showPDFNotification(finalPath, fileName);
-        }
+      // Now use SmartFileManager to save to best location
+      const saveResult = await SmartFileManager.savePDFSmart(pdf.filePath, fileName);
+      
+      if (saveResult.success) {
+        // Show notification with appropriate actions
+        await SmartFileManager.showDownloadNotification(saveResult, fileName);
+        
+        // Also show a brief success alert
+        Alert.alert(
+          'Success! 🎉',
+          `PDF saved using ${saveResult.method} storage.\\n\\nCheck your notification for quick actions!`,
+          [{ text: 'OK' }]
+        );
       } else {
-        throw new Error('All save locations failed');
+        throw new Error('Failed to save PDF to any location');
       }
 
     } catch (error) {
       console.error('PDF Generation Error:', error);
       Alert.alert(
         'Generation Failed 😞', 
-        `Could not create PDF. Error: ${(error as Error).message || error}\n\nThis commonly happens due to:\n• Emulator storage limitations\n• Missing write permissions\n• Invalid file paths\n\nTry testing on a real device.`,
+        `Could not create PDF. Error: ${(error as Error).message || error}\\n\\nPlease try again.`,
         [{ text: 'OK' }]
       );
     } finally {
@@ -661,7 +478,7 @@ const ProposalGenerator = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Solar Proposal Generator</Text>
       <Text style={styles.description}>
-        Generate professional solar installation proposals with environmental impact analysis
+        Generate professional solar installation proposals with smart file management
       </Text>
       
       <TouchableOpacity
@@ -677,23 +494,16 @@ const ProposalGenerator = () => {
         disabled={isGenerating}
       >
         <Text style={styles.buttonText}>
-          {isGenerating ? 'Generating...' : '☀ Generate PDF Directly'}
+          {isGenerating ? 'Generating...' : '☀ Generate PDF with Notification'}
         </Text>
       </TouchableOpacity>
 
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>📋 Proposal includes:</Text>
-        <Text style={styles.infoItem}>• Solar capacity recommendations</Text>
-        <Text style={styles.infoItem}>• Environmental impact calculations</Text>
-        <Text style={styles.infoItem}>• Cost estimation with subsidies</Text>
-        <Text style={styles.infoItem}>• Contact information</Text>
-      </View>
-
-      <View style={styles.helpCard}>
-        <Text style={styles.helpTitle}>🔔 After generation:</Text>
-        <Text style={styles.helpItem}>• You'll get a notification when PDF is ready</Text>
-        <Text style={styles.helpItem}>• Tap "Open PDF" to view immediately</Text>
-        <Text style={styles.helpItem}>• Tap "Share" to send to others</Text>
+        <Text style={styles.infoTitle}>🚀 New Features:</Text>
+        <Text style={styles.infoItem}>• Smart file storage (works on all Android versions)</Text>
+        <Text style={styles.infoItem}>• Rich notifications with Open & Share actions</Text>
+        <Text style={styles.infoItem}>• Automatic permission handling</Text>
+        <Text style={styles.infoItem}>• MediaStore integration for Android 10+</Text>
       </View>
 
       <PreviewModal />
@@ -762,29 +572,6 @@ const styles = StyleSheet.create({
   infoItem: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 5,
-    lineHeight: 20,
-  },
-  helpCard: {
-    backgroundColor: '#e3f2fd',
-    borderRadius: 8,
-    padding: 20,
-    marginTop: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-  },
-  helpTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1976d2',
-    marginBottom: 10,
-  },
-  helpItem: {
-    fontSize: 14,
-    color: '#1565c0',
     marginBottom: 5,
     lineHeight: 20,
   },

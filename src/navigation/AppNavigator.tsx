@@ -31,7 +31,7 @@ import SolarPage1 from "../components/SolarPage1";
 import { t } from "i18next";
 import SolarPage2 from "../components/SolarPage2";
 import SolarPage3 from "../components/SolarPage3";
-import ProposalGenerator from "../components/ProposalGeneratorWithPreview";
+import ProposalGenerator from '../components/ProposalGeneratorWithPreviewClean';
 
 export type RootStackParamList = {
   Login: undefined;
