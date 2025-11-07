@@ -84,8 +84,9 @@ android {
         applicationId "com.arkaenergy.testapp1"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
+
          manifestPlaceholders = [ mapsApiKey: project.findProperty("MAPS_API_KEY") ?: "" ]
     }
     signingConfigs {

@@ -165,7 +165,7 @@ export default function AppNavigator() {
 
   return (
     <Stack.Navigator
-      initialRouteName={isLoggedIn ? "MainDrawer" : "Login"} // ✅ fixed initial route
+      initialRouteName={isLoggedIn ? "MainDrawer" : "Login"} //  fixed initial route
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />

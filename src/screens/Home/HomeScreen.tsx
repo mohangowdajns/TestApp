@@ -1,10 +1,132 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Linking, Button } from 'react-native';
+
+
 
 export default function HomeScreen({ navigation }: any) {
+
+   useEffect(() => {
+    const handleDeepLink = (event: any) => {
+      const { url } = event;
+      console.log('UPI Response URL:', url);
+
+      const query = url.split('?')[1];
+      if (!query) {
+        Alert.alert('Payment Cancelled or No Response');
+        return;
+      }
+
+      const params = Object.fromEntries(new URLSearchParams(query));
+      console.log('Parsed UPI response:', params);
+
+      const status = params.Status?.toLowerCase?.();
+      const responseCode = params.responseCode?.toUpperCase?.();
+
+      if (status === 'success') {
+        Alert.alert(
+          'Payment Successful',
+          `Transaction ID: ${params.txnId || params.txnRef || '-'}`
+        );
+      } else if (responseCode === 'U09' || status === 'failure') {
+        Alert.alert('Payment Cancelled', 'You cancelled the payment.');
+      } else if (status === 'pending' || status === 'submitted') {
+        Alert.alert('Payment Pending', 'The transaction is still processing.');
+      } else {
+        Alert.alert(
+          'Payment Failed or Unknown',
+          'We could not verify the transaction.'
+        );
+      }
+    };
+
+    // Add listener
+    const sub = Linking.addEventListener('url', handleDeepLink);
+
+    // Handle if app opens via deep link initially
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+
+    return () => sub.remove();
+  }, []);
+
+  // ---------------------------------
+  //  UPI Payment Function
+  // ---------------------------------
+  const payWithUPI = async () => {
+    const upiUrl =
+      'upi://pay?pa=merchant@upi' +
+      '&pn=MerchantName' +
+      '&am=1.00' +
+      '&cu=INR' +
+      '&tn=TestPayment' +
+      '&tr=TXN' +
+      Date.now() +
+      '&url=myapp://upiresponse';
+
+    let paymentReturned = false;
+
+    const listener = (event: any) => {
+      paymentReturned = true;
+      const { url } = event;
+      const query = url.split('?')[1];
+      const params = Object.fromEntries(new URLSearchParams(query || ''));
+      const status = params.Status?.toLowerCase?.();
+      const responseCode = params.responseCode?.toUpperCase?.();
+
+      if (status === 'success') {
+        Alert.alert(
+          'Payment Successful',
+          `Transaction ID: ${params.txnId || params.txnRef || '-'}`
+        );
+      } else if (responseCode === 'U09' || status === 'failure') {
+        Alert.alert('Payment Cancelled', 'You cancelled the payment.');
+      } else if (status === 'pending' || status === 'submitted') {
+        Alert.alert('Payment Pending', 'The transaction is still processing.');
+      } else {
+        Alert.alert(
+          'Payment Failed or Unknown',
+          'We could not verify the transaction.'
+        );
+      }
+    };
+
+    const sub = Linking.addEventListener('url', listener);
+
+    try {
+      const supported = await Linking.canOpenURL(upiUrl);
+      if (supported) {
+        await Linking.openURL(upiUrl);
+
+        // Fallback timeout (user never returns)
+        setTimeout(() => {
+          if (!paymentReturned) {
+            Alert.alert(
+              'No Response',
+              'You left the payment screen before completing the transaction.'
+            );
+          }
+          sub.remove();
+        }, 20000); // 20s timeout
+      } else {
+        Alert.alert(
+          'No UPI App',
+          'Please install a UPI app like GPay, PhonePe, or Paytm.'
+        );
+        sub.remove();
+      }
+    } catch (err) {
+      console.error('UPI Error:', err);
+      Alert.alert('Error', 'Unable to start UPI payment.');
+      sub.remove();
+    }
+  };
+
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Pages</Text>
+      <Button title="Pay ₹1" onPress={payWithUPI} />
 
       <TouchableOpacity
         style={[styles.button, { backgroundColor: '#3A5FE8' }]} // blue
@@ -27,7 +149,7 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={styles.buttonText}>Document Proposal</Text>
       </TouchableOpacity>
 
-          <TouchableOpacity
+      <TouchableOpacity
         style={[styles.button, { backgroundColor: '#ff0084ff' }]} // orange
         onPress={() => navigation.navigate('SolarPage3')}
       >
