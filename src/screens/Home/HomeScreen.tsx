@@ -33,6 +33,12 @@ export default function HomeScreen({ navigation }: any) {
       >
         <Text style={styles.buttonText}>Marketing Portal</Text>
       </TouchableOpacity>
+          <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#ff008450' }]} // orange
+        onPress={() => navigation.navigate('ProposalGenerator')}
+      >
+        <Text style={styles.buttonText}>Proposal Generator</Text>
+      </TouchableOpacity>
     </View>
   );
 }

@@ -31,6 +31,7 @@ import SolarPage1 from "../components/SolarPage1";
 import { t } from "i18next";
 import SolarPage2 from "../components/SolarPage2";
 import SolarPage3 from "../components/SolarPage3";
+import ProposalGenerator from "../components/ProposalGeneratorWithPreview";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -40,6 +41,7 @@ export type RootStackParamList = {
   SolarPage1: undefined;
   SolarPage2: undefined;
   SolarPage3: undefined;
+  ProposalGenerator: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -194,6 +196,11 @@ export default function AppNavigator() {
         name="SolarPage3"
         component={SolarPage3}
         options={{ headerShown: true, title: t("marketingPortal") }}
+      />
+      <Stack.Screen
+        name="ProposalGenerator"
+        component={ProposalGenerator}
+        options={{ headerShown: false, title: t("marketingPortal") }}
       />
 
 
